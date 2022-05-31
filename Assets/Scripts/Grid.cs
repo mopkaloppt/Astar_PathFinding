@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class Grid : MonoBehaviour
 {
-    public Transform player;
+    // public Transform player;
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize; // area in world coords that grid covers
     public float nodeRadius; // how much space each node covers
@@ -88,7 +88,7 @@ public class Grid : MonoBehaviour
 
         if (grid != null)
         {
-            Node playerNode = GetNodeFromWorldPoint(player.position);
+            //Node playerNode = GetNodeFromWorldPoint(player.position);
             foreach (Node n in grid)
             {
                 Gizmos.color = (n.walkable)? Color.white : Color.red;
