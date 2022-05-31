@@ -34,10 +34,38 @@ public class Grid : MonoBehaviour
             {
                 Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
                 bool walkable = !(Physics.CheckSphere(worldPoint,nodeRadius,unwalkableMask));
-                grid[x,y] = new Node(walkable, worldPoint);
+                grid[x,y] = new Node(walkable, worldPoint, x, y);
             }
         }
     }
+
+    public List<Node> GetNeighbors(Node node)
+    {
+        List<Node> neighbors = new List<Node>();
+        // We are searching neighbor nodes in a 3x3 block
+        //      _ _ _
+        //     |_|_|_|
+        //     |_|0|_|
+        //     |_|_|_|
+        // 0 is where the currentNode is.   
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                if (x == 0 && y == 0)
+                    // We are at the currentNode, so skip
+                    continue;
+                                
+                int checkXpos = node.Xpos + x;
+                int checkYpos = node.Ypos + y;
+
+                if (checkXpos >= 0 && checkXpos < gridSizeX && checkYpos >= 0 && checkYpos < gridSizeY)
+                    neighbors.Add(grid[checkXpos, checkYpos]);     
+            }
+        }
+        return neighbors;
+    }
+    
     public Node GetNodeFromWorldPoint(Vector3 worldPosition)
     {
         float percentX = (worldPosition.x + gridWorldSize.x/2) / gridWorldSize.x;
@@ -53,6 +81,7 @@ public class Grid : MonoBehaviour
 
     }
 
+    public List<Node> path;
     void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x,1,gridWorldSize.y));
@@ -63,10 +92,16 @@ public class Grid : MonoBehaviour
             foreach (Node n in grid)
             {
                 Gizmos.color = (n.walkable)? Color.white : Color.red;
-                if (playerNode == n)
-                {
-                    Gizmos.color = Color.green;
-                }
+                // Test A* Pathfinding code
+                if (path != null)
+                    if (path.Contains(n))
+                        Gizmos.color = Color.green;
+                    
+                // Test Grid Building code
+                // if (playerNode == n)
+                // {
+                //     Gizmos.color = Color.green;
+                // }
                 Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
             }
         }
