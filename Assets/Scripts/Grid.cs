@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Grid : MonoBehaviour
 {
+    public Transform player;
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize; // area in world coords that grid covers
     public float nodeRadius; // how much space each node covers
@@ -19,8 +20,6 @@ public class Grid : MonoBehaviour
         gridSizeX = Mathf.RoundToInt(gridWorldSize.x/nodeDiameter);
         gridSizeY = Mathf.RoundToInt(gridWorldSize.y/nodeDiameter);
         CreateGrid();
-
-
     }
 
     void CreateGrid()
@@ -39,16 +38,35 @@ public class Grid : MonoBehaviour
             }
         }
     }
+    public Node GetNodeFromWorldPoint(Vector3 worldPosition)
+    {
+        float percentX = (worldPosition.x + gridWorldSize.x/2) / gridWorldSize.x;
+        // In 3D world z in our y direction for 2D grid, hence worldPosition.z
+        float percentY = (worldPosition.z + gridWorldSize.y/2) / gridWorldSize.y;
+        // Must Clamp the value between (0,1) because we don't want player to fall of the grid
+        percentX = Mathf.Clamp01(percentX);
+        percentY = Mathf.Clamp01(percentY);
 
-    void onDrawGizmos()
+        int x = Mathf.RoundToInt((gridSizeX-1) * percentX);
+        int y = Mathf.RoundToInt((gridSizeY-1) * percentY);
+        return grid[x,y];
+
+    }
+
+    void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x,1,gridWorldSize.y));
 
         if (grid != null)
         {
+            Node playerNode = GetNodeFromWorldPoint(player.position);
             foreach (Node n in grid)
             {
                 Gizmos.color = (n.walkable)? Color.white : Color.red;
+                if (playerNode == n)
+                {
+                    Gizmos.color = Color.green;
+                }
                 Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
             }
         }
